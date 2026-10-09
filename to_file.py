@@ -15,7 +15,9 @@ def parse(text: str):
             content = content[2:]
         elif content.startswith("\n"):
             content = content[1:]
-        if content.endswith("\n"):
+        if content.endswith("\n\n"):
+            content = content[:-2]
+        elif content.endswith("\n"):
             content = content[:-1]
         files.append((name, content))
     return files
@@ -27,7 +29,8 @@ def main(input_path: str, output_dir: str):
         print(f"错误: 找不到文件: {source}")
         return 1
 
-    files = parse(source.read_text(encoding="utf-8"))
+    with source.open("r", encoding="utf-8", errors="surrogateescape", newline="") as fh:
+        files = parse(fh.read())
     if not files:
         print("警告: 未找到任何 // file: 标记")
         return 1
@@ -38,7 +41,8 @@ def main(input_path: str, output_dir: str):
     for name, content in files:
         dest = root / name
         dest.parent.mkdir(parents=True, exist_ok=True)
-        dest.write_text(content, encoding="utf-8")
+        with dest.open("w", encoding="utf-8", errors="surrogateescape", newline="") as fh:
+            fh.write(content)
 
     print(f"已还原 {len(files)} 个文件到 {root}")
     return 0

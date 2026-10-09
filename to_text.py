@@ -5,11 +5,12 @@ from pathlib import Path
 
 
 def _write(output: Path, files: list, root: Path):
-    with output.open("w", encoding="utf-8") as out:
+    with output.open("w", encoding="utf-8", errors="surrogateescape", newline="") as out:
         for f in files:
             name = f.relative_to(root).as_posix()
             out.write(f"// file: {name}\n\n")
-            out.write(f.read_text(encoding="utf-8", errors="ignore"))
+            with f.open("r", encoding="utf-8", errors="surrogateescape", newline="") as src:
+                out.write(src.read())
             out.write("\n\n")
     print(f"已写入 {len(files)} 个文件到 {output}")
 
